@@ -4,8 +4,7 @@ import ast
 
 
 class SnapShot:                              
-    def __init__(self, agent):               # ← __init__ was missing entirely
-        self.agent = agent
+    def __init__(self):               # ← __init__ was missing entirely
         self.snapshots = []
 
     def collect_imports(self, codebase_dir):  
@@ -26,10 +25,9 @@ class SnapShot:
                     if node.module:          
                         imports.add(node.module.split('.')[0])
 
-            if imports:           
-                print("found the imports:",imports)            
+            if imports:                     
                 file_imports[str(py_file)] = imports
-
+            
         return file_imports                   
 
 
@@ -38,10 +36,12 @@ class SnapShot:
 
         for file, imports in file_imports.items():
             packages = {}
-
+    
             for import_name in imports:      # ← fixed indentation, was misaligned
                 try:
+                    #Error in code sterns from this part, meta.version expects a package name, not a module name. You may need to map module names to package names if they differ.
                     version = meta.version(import_name)
+                    print(version)  # ← added print statement for debugging
                     packages[import_name] = version
                 except meta.PackageNotFoundError:
                     pass
@@ -53,8 +53,10 @@ class SnapShot:
 
 
 if __name__ == "__main__":
-    agent = SnapShot(agent=None)
+    agent = SnapShot()
+    package_list:list[dict] = []  # ← added type annotation for package_list, was missing
     file_imports = agent.collect_imports("../codebase")
     mapped = agent.map_versions(file_imports)   # ← fixed method name, was map_to_packages
     for file, packages in mapped.items():
-        print(file, "→", packages)
+        package_list.append(packages)  # ← fixed variable name, was package_list
+    print(mapped)  # ← added print statement to show the final mapping of files to packages
