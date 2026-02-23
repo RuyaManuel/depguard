@@ -1,0 +1,15 @@
+# Agent Objective.
+# This agent is going to be designed to fix the issue of dependency compatibility overtime. due to changes to massive codebase of certain dependencies to avoid crashes
+
+# How do we intend to fix this problem
+
+# Step 1: Determine signals that ai watches out for, such as:
+
+a. Local Environment state:
+    * Python version
+    * installed packages
+    * installed package version
+
+b. dependency graph
+
++234 907 350 9062

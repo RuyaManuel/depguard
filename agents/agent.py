@@ -1,15 +1,10 @@
-import requests
-from agents.snapshot import SnapShot 
-import httpx
-import asyncio
 import json
 from dotenv import load_dotenv
 import os
-from typing import Dict, Any
 from groq import Groq
+from utils.snapshot import SnapShot
 from tools.descriptions import tools
 from tools.functions import check_vulnerability
-
 
 load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -19,55 +14,23 @@ class Agent:
     def __init__(self):
         self.snapshot = SnapShot()
 
+    def get_installed_packages(self,project_path) -> list[dict]:
+        return self.snapshot.read_requirements(project_path)
 
-    def get_installed_packages(self) -> list[dict]:
-        package_list: list[dict] = []
-        data = self.snapshot.map_versions(self.snapshot.collect_imports('./codebase'))
-        for file, imports in data.items():
-            if imports:
-                for name, version in imports.items():
-                    package_list.append({
-                        "name": name,
-                        "version": version
-                    })
-
-        return package_list
-
-    # def run_agent(self,user_message):
-    #     messages = [{"role": "user", "content": user_message}]
-
-    #     response = client.chat.completions.create(
-    #         model="openai/gpt-oss-120b",
-    #         messages=messages,
-    #         tools=tools,
-    #         tool_choice="auto"
-    #     )
-
-    #     choice = response.choices[0]
-    #     # print("Model response:", choice.message)
-    #     # # now we check if model has decided to call a tool and if so we execute the tool and send the result back to the model
-    #     # # if choice.message.tool_calls:
-    #     if choice.message.tool_calls:
-    #         for tool_call in choice.message.tool_calls:
-    #             function_name = tool_call.function.name
-    #             function_args = json.loads(tool_call.function.arguments)
-
-    #             if function_name == "check_vulnerability":
-    #                 result = check_vulnerability(**function_args)
-    #                 print("Tool result:", result)
-    def run_agent(self, user_message):
-
+    def run_agent(self, user_message) -> dict:
         messages = [
-        {"role": "system", "content": "You are a vulnerability checker. Use the check_vulnerability tool to check every every package using functions available to you."},
-        {"role": "user", "content": f"{user_message}"}
+            {"role": "system", "content": "You are a vulnerability checker. Use the check_vulnerability tool to check every package provided to you."},
+            {"role": "user", "content": user_message}
         ]
+
+        all_results = []
 
         while True:
             response = client.chat.completions.create(
-            model="openai/gpt-oss-120b",
-            messages=messages,
-            tools=tools,
-            tool_choice="auto"
+                model="openai/gpt-oss-120b",
+                messages=messages,
+                tools=tools,
+                tool_choice="auto"
             )
 
             choice = response.choices[0]
@@ -82,14 +45,26 @@ class Agent:
 
                 for tool_call in choice.message.tool_calls:
                     function_args = json.loads(tool_call.function.arguments)
-                    print("function arguments:",function_args)
 
                     if tool_call.function.name == "check_vulnerability":
                         result = check_vulnerability(**function_args)
-                        print(f"Checked: {function_args} -> {result}")
 
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "content": json.dumps(result)
-                })
+                        if isinstance(result, list):
+                            all_results.extend(result)
+                        else:
+                            all_results.append(result)
+
+                    messages.append({           # ← now inside the for loop
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": json.dumps(result)
+                    })
+
+        # determine if any vulnerabilities were found
+        vulnerable = [r for r in all_results if "no known" not in r.lower()]
+       
+        return {
+            "total_checked": len(all_results),
+            "vulnerable": vulnerable,
+            "critical": len(vulnerable) > 0
+        }
