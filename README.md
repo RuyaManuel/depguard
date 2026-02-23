@@ -1,29 +1,86 @@
-# Preventive Maintenance Agent (minimal)
+# DepGuard 🛡️
+An AI-powered dependency vulnerability scanner that autonomously inspects your Python codebase, identifies installed packages, checks them against known vulnerability databases, and suggests fixes — all driven by an LLM agent.
 
-This is a tiny example project to get you chatting with an LLM quickly using Groq.
+## What it does
+DepGuard scans your Python project, extracts every imported package, maps each one to its installed version, and uses an AI agent to call the OSV vulnerability database to check for known security issues. It then suggests upgrade paths for any vulnerable packages it finds.
 
-Setup
 
-1. Install dependencies:
+## How it works
+Your codebase
+      ↓
+Collect all imports (AST parsing)
+      ↓
+Map imports → installed versions (importlib.metadata)
+      ↓
+LLM Agent decides which tools to call
+      ↓
+check_vulnerability() hits the OSV API for each package
+      ↓
+Agent summarizes findings + suggests fixes
 
-```powershell
-py -m pip install -r requirements.txt
-```
+# Project Structure
+depguard/
+├── agents/
+│   ├── agent.py          # Core LLM agent logic and tool call loop
+│   └── snapshot.py       # AST import collector and version mapper
+├── tools/
+│   ├── functions.py      # check_vulnerability() implementation
+│   └── descriptions.py   # Tool schema definitions for the LLM
+├── codebase/             # Drop the project you want to scan here
+├── main.py               # Entry point
+├── .env                  # API keys (not committed)
+└── requirements.txt
 
-2. Add your Groq API key. Copy `.env.example` to `.env` and set `GROQ_API_KEY`.
+## Getting Started
+### Prerequisites
 
-3. Run the chat:
+ Python 3.11+
+A Groq API key
 
-```powershell
-py agent_one.py
-```
+## Installation
+git clone https://github.com/yourusername/depguard.git
+cd depguard
+pip install -r requirements.txt
+
+## Configuration
+Create a .env file in your root directory 
+
+GROQ_API_KEY=your_api_key_here
 
 Usage
+Drop the codebase you want to scan into the codebase/ directory, then run:
+bashpython main.py
 
-- Type a message and press Enter to send it to the model.
-- Type `exit` or `quit` or press Ctrl+C to stop.
+Example Output
+Checked: groq 0.4.1 → groq version 0.4.1 has no known vulnerabilities
+Checked: requests 2.28.0 → requests version 2.28.0 has 1 known vulnerability
 
-Notes
+Final Report:
+- requests 2.28.0 is vulnerable. Upgrade to 2.32.5
+  Run: pip install requests==2.32.5
 
-- This example uses the `groq` Python client. If you prefer to call the HTTP API directly, swap `query_model()` implementation.
-- If you still want to run local models with Ollama later, keep Ollama installed — this example uses Groq to avoid download issues.
+Tech Stack
+
+Groq — LLM inference
+OSV API — Open source vulnerability database
+importlib.metadata — Package version resolution
+Python AST — Static import analysis
+
+
+Roadmap
+
+ AST-based import collection
+ Version mapping via importlib.metadata
+ Batch vulnerability checking via OSV API
+ Auto-fix version suggestions
+ Structured vulnerability report (PDF/Markdown)
+ Scheduled monitoring
+ CI/CD integration (GitHub Actions)
+ Support for npm and other ecosystems
+
+
+Contributing
+This project is in early development. Feel free to open issues or submit pull requests.
+
+License
+MIT
