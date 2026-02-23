@@ -1,0 +1,6 @@
+timestamp,level,cpu_percent,memory_percent,disk_percent,uptime_hours,last_maintenance,message
+2026-02-20 03:12:45,ERROR,55,78,80,1234,2026-02-01,Backup failed (timeout)
+2026-02-19 22:01:10,WARN,70,85,75,1230,2026-02-01,High memory usage detected
+2026-02-18 14:33:01,ERROR,65,80,82,1228,2026-02-01,DB connection lost
+2026-02-17 09:12:11,INFO,40,50,60,1220,2026-02-01,Scheduled maintenance completed
+2026-02-16 21:02:55,ERROR,60,72,88,1218,2026-02-01,Failed to write to disk

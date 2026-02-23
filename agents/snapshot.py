@@ -49,17 +49,8 @@ class SnapShot:
                 except meta.PackageNotFoundError:
                     pass
 
-            if imports:                      # ← fixed indentation, belongs inside the for loop
+            if imports:               
                 mapped[file] = packages
 
-        return mapped                        # ← fixed indentation, belongs inside the method
+        return mapped                       
 
-
-if __name__ == "__main__":
-    agent = SnapShot()
-    package_list:list[dict] = []
-    file_imports = agent.collect_imports("../codebase")
-    mapped = agent.map_versions(file_imports)   
-    for file, packages in mapped.items():
-        package_list.append(packages)  
-    print(mapped)
