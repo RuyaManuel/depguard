@@ -27,30 +27,59 @@ class SnapShot:
 
             if imports:                     
                 file_imports[str(py_file)] = imports
-            
+        
         return file_imports                   
 
 
-    def map_versions(self, file_imports):    
-        mapped = {}                 
-        for file, imports in file_imports.items():
-            packages = {}
+    # def map_versions(self, file_imports):    
+    #     mapped = {}                 
+    #     for file, imports in file_imports.items():
+    #         packages = {}
     
-            for import_name in imports:      
+    #         for import_name in imports:      
+    #             try:
+    #                 for dist in meta.distributions():
+    #                     packages[import_name] = {
+    #                         "meta_data" : dist.metadata["import_name"],
+    #                         "requires": dist.requires,
+    #                         "version" : dist.version,
+    #                         "required-python-version": dist.metadata.get("Requires-Python"),
+    #                         "name": import_name,
+    #                     }
+    #             except meta.PackageNotFoundError:
+    #                 pass
+
+    #         if imports:               
+    #             mapped[file] = packages
+
+    #     return mapped                       
+
+
+    def map_versions(self, file_imports):
+        mapped = {}
+        # Build a mapping of top-level import names -> distribution package names
+        import_to_pkg = meta.packages_distributions()
+
+        for file, imports in file_imports.items():
+            packages = {}  # key: import_name, value: metadata dict
+
+            for import_name in imports:
+                pkg_names = import_to_pkg.get(import_name)
+                if not pkg_names:
+                    continue
                 try:
-                    for dist in meta.distributions():
-                        packages = {
-                            "meta_data" : dist.metadata["import_name"],
-                            "requires": dist.requires,
-                            "version" : dist.version,
-                            "required-python-version": dist.metadata.get("Requires-Python"),
-                            "name": import_name,
-                        }
+                    dist = meta.distribution(pkg_names[0])  # use first match
+                    packages[import_name] = {
+                    "meta_data":    dist.metadata["Name"],
+                    "requires":     dist.requires,
+                    "version":      dist.version,
+                    "required-python-version": dist.metadata.get("Requires-Python"),
+                    "name":         import_name,
+                }
                 except meta.PackageNotFoundError:
                     pass
 
-            if imports:               
+            if packages:
                 mapped[file] = packages
 
-        return mapped                       
-
+        return mapped

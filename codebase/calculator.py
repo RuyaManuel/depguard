@@ -3,6 +3,7 @@ import statistics
 import decimal
 from pathlib import Path
 import groq
+from dotenv import load_dotenv
 
 
 
