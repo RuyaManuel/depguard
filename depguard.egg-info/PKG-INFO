@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: depguard
+Version: 0.1.0
+Summary: AI-powered Python dependency vulnerability scanner
+Requires-Python: >=3.10
+License-File: LICENSE
+Requires-Dist: groq
+Requires-Dist: python-dotenv
+Requires-Dist: requests
+Dynamic: license-file

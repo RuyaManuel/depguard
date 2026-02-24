@@ -1,0 +1,16 @@
+LICENSE
+README.md
+main.py
+pyproject.toml
+depguard.egg-info/PKG-INFO
+depguard.egg-info/SOURCES.txt
+depguard.egg-info/dependency_links.txt
+depguard.egg-info/entry_points.txt
+depguard.egg-info/requires.txt
+depguard.egg-info/top_level.txt
+tools/__init__.py
+tools/descriptions.py
+tools/functions.py
+utils/actor.py
+utils/diff_agent.py
+utils/snapshot.py

@@ -24,3 +24,8 @@ def check_vulnerability(packages):
             results.append(f"{pkg['name']} version {pkg['version']} has no known vulnerabilities")
 
     return results
+
+
+# def get_secure_version(vuln_packages):
+
+    

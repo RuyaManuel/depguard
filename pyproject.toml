@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "depguard"
+version = "0.1.0"
+description = "AI-powered Python dependency vulnerability scanner"
+requires-python = ">=3.10"
+dependencies = [
+    "groq",
+    "python-dotenv",
+    "requests"
+]
+
+[project.scripts]
+depguard = "main:main"
+
+[tool.setuptools]
+py-modules = ["main", "agent"]
+
+[tool.setuptools.packages.find]
+include = ["tools*", "utils*"]
