@@ -3,23 +3,10 @@ tools = [
         "type": "function",
         "function": {
             "name": "check_vulnerability",
-            "description": "Check multiple Python packages for known vulnerabilities at once",
+            "description": "Scan the project requirements.txt for known vulnerabilities. Returns CVE IDs, descriptions, and fix versions for all vulnerable packages. Call this once to get a full audit.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "packages": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": {"type": "string"},
-                                "version": {"type": "string"}
-                            },
-                            "required": ["name", "version"]
-                        }
-                    }
-                },
-                "required": ["packages"]
+                "properties": {}
             }
         }
     }

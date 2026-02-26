@@ -1,31 +1,30 @@
+import subprocess
+import json
 
-import requests
+def check_vulnerability(project_path) -> list:
+    print("\n🔍 Starting security audit...\n")
 
-def check_vulnerability(packages):
-    # packages should be a list of dicts: [{"name": "groq", "version": "0.4.1"}, ...]
+    process = subprocess.run(
+        ["py", "-m", "pip_audit", "--format", "json"],
+        capture_output=True,
+        text=True,
+        cwd=project_path    
+    )
+
+    data = json.loads(process.stdout)
+    dependencies = data.get("dependencies", [])
     
-    queries = [
-        {
-            "version": pkg["version"],
-            "package": {"name": pkg["name"], "ecosystem": "PyPI"}
-        }
-        for pkg in packages
-    ]
+    vulnerable = [d for d in dependencies if d.get("vulns")]
+    clean = [d for d in dependencies if not d.get("vulns") and "skip_reason" not in d]
+    skipped = [d for d in dependencies if "skip_reason" in d]
 
-    response = requests.post("https://api.osv.dev/v1/querybatch", json={"queries": queries})
-    data = response.json()
+    print(f"✅ Clean: {len(clean)}")
+    print(f"⚠️  Skipped: {len(skipped)}")
+    print(f"🚨 Vulnerable: {len(vulnerable)}")
 
-    results = []
-    for pkg, result in zip(packages, data.get("results", [])):
-        vuln_count = len(result.get("vulns", []))
-        if vuln_count > 0:
-            results.append(f"{pkg['name']} version {pkg['version']} has {vuln_count} known vulnerabilities")
-        else:
-            results.append(f"{pkg['name']} version {pkg['version']} has no known vulnerabilities")
+    for dep in vulnerable:
+        print(f"\n❌ {dep['name']} {dep['version']}")
+        for vuln in dep['vulns']:
+            print(f"   - {vuln['id']}: fix in {vuln['fix_versions']}")
 
-    return results
-
-
-# def get_secure_version(vuln_packages):
-
-    
+    return dependencies
