@@ -1,23 +1,22 @@
 import os
+import json
 import tempfile
 import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from agents.agent import Agent
+
 router = APIRouter()
 
 
 @router.post("/scan")
 async def scan(requirements: UploadFile = File(...)):
-    # Validate the uploaded file
     if requirements.filename != "requirements.txt":
         raise HTTPException(
             status_code=400,
             detail="Only requirements.txt files are accepted."
         )
 
-    # Save uploaded requirements.txt to a temp directory
-    # so check_vulnerability() has a real project_path to work with
     temp_dir = tempfile.mkdtemp()
 
     try:
@@ -26,18 +25,32 @@ async def scan(requirements: UploadFile = File(...)):
             content = await requirements.read()
             f.write(content)
 
-        # Boot the agent — it returns the full log list
+        # Run the agent
         agent = Agent(project_path=temp_dir)
         logs = agent.run_agent()
 
+        # Read the updated requirements.txt if the agent modified it
+        updated_requirements = None
+        if os.path.exists(req_path):
+            with open(req_path, "r") as f:
+                updated_requirements = f.read()
+
+        # Read the audit report if the agent generated it
+        report_path = os.path.join(temp_dir, "audit_report.json")
+        audit_report = None
+        if os.path.exists(report_path):
+            with open(report_path, "r") as f:
+                audit_report = json.load(f)
+
         return JSONResponse(content={
             "status": "complete",
-            "logs": logs
+            "logs": logs,
+            "updated_requirements": updated_requirements,
+            "audit_report": audit_report,
         })
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
     finally:
-        # Always clean up temp directory when done
         shutil.rmtree(temp_dir, ignore_errors=True)

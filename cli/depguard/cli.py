@@ -13,6 +13,7 @@ def scan():
     """Scan your project's requirements.txt for known vulnerabilities."""
 
     req_path = os.path.join(os.getcwd(), "requirements.txt")
+    print(req_path)
 
     if not os.path.exists(req_path):
         typer.echo("❌ No requirements.txt found in the current directory.")

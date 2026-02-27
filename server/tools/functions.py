@@ -13,10 +13,10 @@ def check_vulnerability(project_path: str) -> tuple[list, list[str]]:
     logs.append("🔍 Starting security audit...")
 
     process = subprocess.run(
-        ["python", "-m", "pip_audit", "--format", "json"],
-        capture_output=True,
-        text=True,
-        cwd=project_path
+    ["python", "-m", "pip_audit", "--requirement", os.path.join(project_path, "requirements.txt"), "--format", "json"],
+    capture_output=True,
+    text=True,
+    cwd=project_path
     )
 
     data = json.loads(process.stdout)
@@ -48,8 +48,10 @@ def auto_fix(vulnerable: list) -> list[str]:
     return logs
 
 
-def update_requirements(vulnerable: list, req_path="requirements.txt") -> list[str]:
+def update_requirements(vulnerable: list, project_path: str) -> list[str]:
     logs = []
+    req_path = os.path.join(project_path, "requirements.txt")
+
     with open(req_path, "r") as f:
         lines = f.readlines()
 
@@ -68,10 +70,11 @@ def update_requirements(vulnerable: list, req_path="requirements.txt") -> list[s
     return logs
 
 
-def generate_report(vulnerable: list) -> list[str]:
+def generate_report(vulnerable: list, project_path: str) -> list[str]:
     logs = []
     report = {"vulnerabilities": vulnerable}
-    with open("audit_report.json", "w") as f:
+    report_path = os.path.join(project_path, "audit_report.json")
+    with open(report_path, "w") as f:
         json.dump(report, f, indent=2)
     logs.append("📄 Report saved to audit_report.json")
     return logs
@@ -147,10 +150,10 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
                 logs.extend(auto_fix(vulnerable))
                 result = "auto_fix completed successfully."
             elif tool_name == "update_requirements":
-                logs.extend(update_requirements(vulnerable))
+                logs.extend(update_requirements(vulnerable, project_path))
                 result = "requirements.txt updated successfully."
             elif tool_name == "generate_report":
-                logs.extend(generate_report(vulnerable))
+                logs.extend(generate_report(vulnerable, project_path))
                 result = "audit_report.json generated successfully."
             elif tool_name == "re_run_audit":
                 vulnerable, audit_logs = check_vulnerability(project_path)

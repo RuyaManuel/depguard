@@ -5,8 +5,6 @@ from tools.functions import check_vulnerability, decide_next_step
 
 
 load_dotenv()
-
-
 class Agent:
 
     def __init__(self, project_path: str):
