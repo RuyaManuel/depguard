@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "depguard"
+version = "0.1.0"
+description = "AI-powered Python dependency vulnerability scanner"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.9.0",
+    "httpx>=0.27.0",
+]
+
+[project.scripts]
+depguard = "depguard.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["depguard*"]

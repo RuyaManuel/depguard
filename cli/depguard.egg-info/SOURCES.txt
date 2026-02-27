@@ -1,0 +1,9 @@
+pyproject.toml
+depguard/__init__.py
+depguard/cli.py
+depguard.egg-info/PKG-INFO
+depguard.egg-info/SOURCES.txt
+depguard.egg-info/dependency_links.txt
+depguard.egg-info/entry_points.txt
+depguard.egg-info/requires.txt
+depguard.egg-info/top_level.txt
