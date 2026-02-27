@@ -13,7 +13,7 @@ def check_vulnerability(project_path: str) -> tuple[list, list[str]]:
     logs.append("🔍 Starting security audit...")
 
     process = subprocess.run(
-        ["py", "-m", "pip_audit", "--format", "json"],
+        ["python", "-m", "pip_audit", "--format", "json"],
         capture_output=True,
         text=True,
         cwd=project_path
@@ -43,7 +43,7 @@ def auto_fix(vulnerable: list) -> list[str]:
     for dep in vulnerable:
         fix_version = dep['vulns'][0]['fix_versions'][-1]
         logs.append(f"🔧 Upgrading {dep['name']} to {fix_version}...")
-        subprocess.run(["py", "-m", "pip", "install", f"{dep['name']}=={fix_version}"])
+        subprocess.run(["python", "-m", "pip", "install", f"{dep['name']}=={fix_version}"])
     logs.append("✅ All fixes applied!")
     return logs
 
