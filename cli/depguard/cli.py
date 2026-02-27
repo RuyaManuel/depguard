@@ -18,7 +18,7 @@ def scan():
         typer.echo("❌ No requirements.txt found in the current directory.")
         raise typer.Exit()
 
-    typer.echo("📦 Found requirements.txt — sending to DepGuard...\n")
+    typer.echo("📦 requirements.txt Found — Processing for vulnerabilities...\n")
 
     with open(req_path, "rb") as f:
         response = httpx.post(
