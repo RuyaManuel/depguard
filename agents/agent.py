@@ -2,7 +2,7 @@ import json
 from dotenv import load_dotenv
 import os
 from groq import Groq
-from tools.functions import check_vulnerability
+from tools.functions import check_vulnerability,decide_next_step
 
 load_dotenv()
 class Agent:
@@ -13,4 +13,5 @@ class Agent:
 
     def run_agent(self) -> dict:
         results = check_vulnerability(self.project_path)
-        return results
+        if results:
+            decide_next_step(results, self.project_path)

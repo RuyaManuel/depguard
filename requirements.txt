@@ -1,6 +1,6 @@
 groq==0.4.1
 httpx==0.26.0
 pip_audit==2.10.0
-requests==2.31.0
+requests==2.32.4
 python-dotenv==1.0.0
 urllib3==2.6.3
