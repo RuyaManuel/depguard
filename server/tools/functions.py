@@ -16,7 +16,8 @@ def check_vulnerability(project_path: str) -> tuple[list, list[str]]:
     ["python", "-m", "pip_audit", "--requirement", os.path.join(project_path, "requirements.txt"), "--format", "json"],
     capture_output=True,
     text=True,
-    cwd=project_path
+    cwd=project_path,
+    timeout=90.0
     )
 
     data = json.loads(process.stdout)
