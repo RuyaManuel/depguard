@@ -14,30 +14,37 @@ def wake_server():
     try:
         typer.echo("⏳ Connecting to DepGuard server...")
         httpx.get(HEALTH_URL, timeout=60.0)
+        typer.echo("✅ Server is awake!\n")
     except httpx.TimeoutException:
-        typer.echo("⚠️  Server is slow to wake — retrying scan anyway...")
+        typer.echo("⚠️  Server is slow to wake — retrying scan anyway...\n")
     except Exception:
         pass  # Best effort
+
 
 @app.command()
 def scan():
     """Scan your project's requirements.txt for known vulnerabilities."""
 
     req_path = os.path.join(os.getcwd(), "requirements.txt")
-    print(req_path)
 
     if not os.path.exists(req_path):
         typer.echo("❌ No requirements.txt found in the current directory.")
         raise typer.Exit()
 
+    wake_server()
+
     typer.echo("📦 requirements.txt Found — Processing for vulnerabilities...\n")
 
-    with open(req_path, "rb") as f:
-        response = httpx.post(
-            API_URL,
-            files={"requirements": ("requirements.txt", f, "text/plain")},
-            timeout=120.0
-        )
+    try:
+        with open(req_path, "rb") as f:
+            response = httpx.post(
+                API_URL,
+                files={"requirements": ("requirements.txt", f, "text/plain")},
+                timeout=180.0
+            )
+    except httpx.TimeoutException:
+        typer.echo("❌ Request timed out. The server may be overloaded — please try again.")
+        raise typer.Exit()
 
     if response.status_code != 200:
         typer.echo(f"❌ Server error: {response.status_code} — {response.text}")
