@@ -27,12 +27,13 @@ def check_vulnerability(project_path: str) -> tuple[list, list[str]]:
     clean = [d for d in dependencies if not d.get("vulns") and "skip_reason" not in d]
     skipped = [d for d in dependencies if "skip_reason" in d]
 
-    logs.append(f"✅ Clean: {len(clean)}")
-    logs.append(f"⚠️  Skipped: {len(skipped)}")
-    logs.append(f"🚨 Vulnerable: {len(vulnerable)}")
+    logs.append(f"Clean: {len(clean)}")
+    logs.append(f"Skipped: {len(skipped)}")
+    logs.append(f"Vulnerable: {len(vulnerable)}")
 
     for dep in vulnerable:
-        logs.append(f"❌ {dep['name']} {dep['version']}")
+        logs.append(f"compromised package:")
+        logs.append(f"{dep['name']} {dep['version']}")
         for vuln in dep['vulns']:
             logs.append(f"   - {vuln['id']}: fix in {vuln['fix_versions']}")
 
@@ -122,7 +123,7 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
         },
     ]
 
-    logs.append("🤖 AI reasoning...")
+    logs.append("AI reasoning...")
 
     while True:
         response = client.chat.completions.create(
@@ -145,7 +146,7 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
 
         for tool_call in message.tool_calls:
             tool_name = tool_call.function.name
-            logs.append(f"▶ LLM chose action: {tool_name}")
+            logs.append(f"▶ AI chose action: {tool_name}")
 
             if tool_name == "auto_fix":
                 logs.extend(auto_fix(vulnerable))
