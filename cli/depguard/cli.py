@@ -6,7 +6,18 @@ import json
 app = typer.Typer()
 
 API_URL = "https://depguard.onrender.com/scan"
+HEALTH_URL = "https://depguard.onrender.com/health"
 
+
+def wake_server():
+    """Ping the server to wake it up if it's sleeping."""
+    try:
+        typer.echo("⏳ Connecting to DepGuard server...")
+        httpx.get(HEALTH_URL, timeout=60.0)
+    except httpx.TimeoutException:
+        typer.echo("⚠️  Server is slow to wake — retrying scan anyway...")
+    except Exception:
+        pass  # Best effort
 
 @app.command()
 def scan():

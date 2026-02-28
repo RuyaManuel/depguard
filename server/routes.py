@@ -9,6 +9,10 @@ from agents.agent import Agent
 router = APIRouter()
 
 
+@router.get("/health")
+async def health():
+    return {"status": "ok"}
+
 @router.post("/scan")
 async def scan(requirements: UploadFile = File(...)):
     if requirements.filename != "requirements.txt":
