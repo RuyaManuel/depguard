@@ -2,6 +2,7 @@ import typer
 import httpx
 import os
 import json
+import subprocess
 
 app = typer.Typer()
 
@@ -21,6 +22,20 @@ def wake_server():
         pass  # Best effort
 
 
+def auto_fix(req_path: str):
+    """Install fixed packages into the user's own environment."""
+    typer.echo("\n🔧 Installing fixed packages into your environment...")
+    result = subprocess.run(
+        ["pip", "install", "-r", req_path],
+        capture_output=True,
+        text=True
+    )
+    if result.returncode == 0:
+        typer.echo("✅ Fixed packages installed successfully!")
+    else:
+        typer.echo(f"⚠️  Some packages failed to install:\n{result.stderr}")
+
+
 @app.command()
 def scan():
     """Scan your project's requirements.txt for known vulnerabilities."""
@@ -37,9 +52,10 @@ def scan():
 
     try:
         with open(req_path, "rb") as f:
+            content = f.read()
             response = httpx.post(
                 API_URL,
-                files={"requirements": ("requirements.txt", f, "text/plain")},
+                files={"requirements": ("requirements.txt", content, "text/plain")},
                 timeout=180.0
             )
     except httpx.TimeoutException:
@@ -61,6 +77,7 @@ def scan():
         with open(req_path, "w") as f:
             f.write(data["updated_requirements"])
         typer.echo("\n✅ requirements.txt updated in your project.")
+        auto_fix(req_path)  # 👈 install fixes locally
 
     # Write audit_report.json to the developer's project
     if data.get("audit_report"):
