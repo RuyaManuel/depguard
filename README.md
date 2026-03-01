@@ -73,7 +73,6 @@ Final Report:
 ## Roadmap
 
 - [x] Package-based dependency collection via py_audit
-- [x] Version mapping via importlib.metadata
 - [x] Batch vulnerability checking via OSV API
 - [x] Auto-fix version suggestions
 - [ ] Structured vulnerability report (PDF/Markdown)
