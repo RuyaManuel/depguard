@@ -28,7 +28,8 @@ def auto_fix(req_path: str):
     result = subprocess.run(
         ["pip", "install", "-r", req_path],
         capture_output=True,
-        text=True
+        text=True,
+        timeout=120.0
     )
     if result.returncode == 0:
         typer.echo("✅ Fixed packages installed successfully!")
