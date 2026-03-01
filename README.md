@@ -9,13 +9,12 @@ DepGuard scans your Python project's `requirements.txt`, maps each package to it
 ```
 requirements.txt
       ↓
-Read installed packages (py_audit)
+agent activates
       ↓
-Map packages → installed versions (importlib.metadata)
+check for vulnerabilities 
       ↓
 LLM Agent decides which tools to call
       ↓
-check_vulnerability() hits the OSV API for each package
       ↓
 Agent summarizes findings + suggests fixes
 ```
