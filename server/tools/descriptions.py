@@ -13,14 +13,6 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "auto_fix",
-            "description": "Automatically upgrades all vulnerable packages to their fixed versions using pip.",
-            "parameters": {"type": "object", "properties": {}, "required": []},
-        },
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "update_requirements",
             "description": "Updates requirements.txt to pin vulnerable packages to their fixed versions.",
             "parameters": {"type": "object", "properties": {}, "required": []},
