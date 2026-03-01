@@ -15,7 +15,6 @@ check for vulnerabilities
       ↓
 LLM Agent decides which tools to call
       ↓
-      ↓
 Agent summarizes findings + suggests fixes
 ```
 
