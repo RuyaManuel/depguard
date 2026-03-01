@@ -39,8 +39,6 @@ Python 3.11+
 
 ## Installation
 ```bash
-git clone https://github.com/yourusername/depguard.git
-cd depguard
 pip install depguard
 ```
 
