@@ -34,8 +34,8 @@ depguard/
 ## Getting Started
 ### Prerequisites
 
- Python 3.11+
-A Groq API key
+Python 3.11+
+
 
 ## Installation
 git clone https://github.com/yourusername/depguard.git
