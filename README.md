@@ -67,7 +67,6 @@ Final Report:
 
 - **Groq** — LLM inference
 - **OSV API** — Open source vulnerability database
-- **importlib.metadata** — Package version resolution
 - **py_audit** — Package dependency analysis
 
 
