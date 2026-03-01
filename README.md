@@ -46,13 +46,6 @@ cd depguard
 pip install depguard
 ```
 
-## Configuration
-Create a `.env` file in your root directory:
-
-```
-GROQ_API_KEY=your_api_key_here
-```
-
 ## Usage
 Run DepGuard from the root directory where your `requirements.txt` is located:
 
