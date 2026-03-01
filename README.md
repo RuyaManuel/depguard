@@ -46,7 +46,7 @@ pip install depguard
 Run DepGuard from the root directory where your `requirements.txt` is located:
 
 ```bash
-python main.py
+depguard
 ```
 
 ## Example Output
