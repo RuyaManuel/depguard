@@ -2,7 +2,7 @@
 An AI-powered dependency vulnerability scanner that autonomously inspects your Python project's dependencies, checks them against known vulnerability databases, and suggests fixes — all driven by an LLM agent.
 
 ## What it does
-DepGuard scans your Python project's `requirements.txt`, maps each package to its installed version, and uses an AI agent to call the OSV vulnerability database to check for known security issues. It then suggests upgrade paths for any vulnerable packages it finds.
+DepGuard scans your Python project's `requirements.txt`, maps each package to its installed version, and uses an AI agent to call the OSV vulnerability database to check for known security issues. It then automatically carries out fixes for any vulnerable packages it finds.
 
 
 ## How it works
