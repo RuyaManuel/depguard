@@ -20,7 +20,7 @@ Agent summarizes findings + suggests fixes
 
 ## Project Structure
 ```
-depguard/
+server/
 ├── agents/
 │   ├── agent.py          # Core LLM agent logic and tool call loop
 │   └── snapshot.py       # Package collector and version mapper
