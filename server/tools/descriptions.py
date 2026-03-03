@@ -37,6 +37,14 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "open_pull_request",
+            "description": "Opens a GitHub pull request with the fixed requirements.txt. Call this after update_requirements to propose the fix on GitHub.",
+            "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "exit",
             "description": "No further action is needed. Call this when vulnerabilities are resolved or no action is warranted.",
             "parameters": {"type": "object", "properties": {}, "required": []},
