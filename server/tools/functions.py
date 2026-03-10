@@ -1,7 +1,7 @@
 import subprocess
-from groq import Groq
 import os
 from dotenv import load_dotenv
+from google import genai
 import json
 import requests
 from tools.descriptions import tools
@@ -80,7 +80,7 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
         logs.append("No vulnerabilities found. project safe!")
         return logs
 
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    client = genai.Client()
 
     vuln_summary = []
     for dep in vulnerable:
@@ -114,10 +114,10 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
         },
     ]
 
-    logs.append("AI reasoning...")
+    logs.append("depguard is reasoning...")
 
     while True:
-        response = client.chat.completions.create(
+        response = client.models.generate_content(
             model="llama-3.3-70b-versatile",
             messages=messages,
             tools=tools,
@@ -167,6 +167,8 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
 
     return logs
 
+
+# Open pull request tool (function) not properly tested and vetted.
 def open_pull_request(vulnerable: list, project_path: str) -> list[str]:
     logs = []
     token = os.getenv("GITHUB_TOKEN")

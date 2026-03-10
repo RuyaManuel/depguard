@@ -1,0 +1,10 @@
+# Project milestones 
+
+* open PR agentic feature ( partially done)
+* tests for various tools
+* CI/CD pipeline integration
+* Database logging of fixes and actions
+* Research on agent's understanding of entire codebase context.
+
+
+# 
