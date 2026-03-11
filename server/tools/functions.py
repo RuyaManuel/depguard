@@ -223,7 +223,7 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
 
     while True:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",   # replace with your actual model
+            model="gemini-3.1-flash-lite-preview",   # replace with your actual model
             contents=contents,
             config=config,
         )
