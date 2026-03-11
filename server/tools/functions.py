@@ -2,6 +2,7 @@ import subprocess
 import os
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 import json
 import requests
 from tools.descriptions import tools
@@ -28,9 +29,11 @@ def check_vulnerability(project_path: str) -> tuple[list, list[str]]:
     clean = [d for d in dependencies if not d.get("vulns") and "skip_reason" not in d]
     skipped = [d for d in dependencies if "skip_reason" in d]
 
+
     logs.append(f"Clean: {len(clean)}")
     logs.append(f"Skipped: {len(skipped)}")
     logs.append(f"Vulnerable: {len(vulnerable)}")
+
 
     for dep in vulnerable:
         logs.append(f"--compromised packages:")
@@ -73,6 +76,99 @@ def generate_report(vulnerable: list, project_path: str) -> list[str]:
     return logs
 
 
+# def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
+#     logs = []
+
+#     if not vulnerable:
+#         logs.append("No vulnerabilities found. project safe!")
+#         return logs
+
+#     client = genai.Client()
+
+#     vuln_summary = []
+#     for dep in vulnerable:
+#         vuln_summary.append({
+#             "package": dep["name"],
+#             "version": dep["version"],
+#             "vulnerabilities": [
+#                 {"id": v["id"], "fix_versions": v["fix_versions"]}
+#                 for v in dep["vulns"]
+#             ],
+#         })
+
+#     system_instructions = """
+#         You are an automated security remediation agent.
+#         You have just completed a pip-audit scan and found vulnerable dependencies.
+#         Your job is to decide the best sequence of actions to remediate the issues.
+#         Use the available tools to: update requirements.txt, generate a report,
+#         and re-run the audit to confirm fixes. Call tools one at a time.
+#         When everything is resolved, call the 'exit' tool.
+#     """
+
+#     messages = [
+#         {"role": "system", "content": system_instructions},
+#         {
+#             "role": "user",
+#             "content": (
+#                 f"The audit found {len(vulnerable)} vulnerable package(s):\n"
+#                 f"{json.dumps(vuln_summary, indent=2)}\n\n"
+#                 "Please decide and execute the appropriate remediation steps."
+#             ),
+#         },
+#     ]
+
+#     logs.append("depguard is reasoning...")
+
+#     while True:
+#         response = client.models.generate_content(
+#             model="gen-lang-client-0157849620",
+#             messages=messages,
+#             tools=tools,
+#             tool_choice="auto",
+#         )
+
+#         message = response.choices[0].message
+
+#         if message.content:
+#             logs.append(message.content)
+
+#         if not message.tool_calls:
+#             logs.append("✅ LLM finished done reasoning.")
+#             break
+
+#         messages.append(message)
+
+#         for tool_call in message.tool_calls:
+#             tool_name = tool_call.function.name
+#             logs.append(f"▶ AI chose action: {tool_name}")
+
+#             if tool_name == "update_requirements":
+#                 logs.extend(update_requirements(vulnerable, project_path))
+#                 result = "requirements.txt updated successfully."
+#             elif tool_name == "generate_report":
+#                 logs.extend(generate_report(vulnerable, project_path))
+#                 result = "audit_report.json generated successfully."
+#             elif tool_name == "re_run_audit":
+#                 vulnerable, audit_logs = check_vulnerability(project_path)
+#                 logs.extend(audit_logs)
+#                 result = f"Re-audit complete. {len(vulnerable)} vulnerable package(s) remaining."
+#             elif tool_name == "exit":
+#                 logs.append("LLM decided no further action is needed. Done!")
+#                 return logs
+#             elif tool_name == "open_pull_request":
+#                 logs.extend(open_pull_request(vulnerable, project_path))
+#                 result = "Pull request opened and merged on GitHub."
+#             else:
+#                 result = f"Unknown tool: {tool_name}"
+
+#             logs.append(f"↩ Result: {result}")
+#             messages.append({
+#                 "role": "tool",
+#                 "tool_call_id": tool_call.id,
+#                 "content": result,
+#             })
+
+#     return logs
 def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
     logs = []
 
@@ -93,7 +189,7 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
             ],
         })
 
-    system_instructions = """
+    system_instruction = """
         You are an automated security remediation agent.
         You have just completed a pip-audit scan and found vulnerable dependencies.
         Your job is to decide the best sequence of actions to remediate the issues.
@@ -102,41 +198,63 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
         When everything is resolved, call the 'exit' tool.
     """
 
-    messages = [
-        {"role": "system", "content": system_instructions},
-        {
-            "role": "user",
-            "content": (
-                f"The audit found {len(vulnerable)} vulnerable package(s):\n"
-                f"{json.dumps(vuln_summary, indent=2)}\n\n"
-                "Please decide and execute the appropriate remediation steps."
-            ),
-        },
+    # google-genai uses `contents` (list of Content objects), not `messages`
+    # system_instruction is passed via GenerateContentConfig, not as a message role
+    contents = [
+        types.Content(
+            role="user",
+            parts=[
+                types.Part(text=(
+                    f"The audit found {len(vulnerable)} vulnerable package(s):\n"
+                    f"{json.dumps(vuln_summary, indent=2)}\n\n"
+                    "Please decide and execute the appropriate remediation steps."
+                ))
+            ],
+        )
     ]
+
+    config = types.GenerateContentConfig(
+        system_instruction=system_instruction,
+        tools=[types.Tool(function_declarations=tools)],  # tools must be wrapped in Tool()
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+    )
 
     logs.append("depguard is reasoning...")
 
     while True:
         response = client.models.generate_content(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            tools=tools,
-            tool_choice="auto",
+            model="gemini-2.0-flash",   # replace with your actual model
+            contents=contents,
+            config=config,
         )
 
-        message = response.choices[0].message
+        # response.text is the text output (None if the turn is a function call)
+        candidate = response.candidates[0]
+        
+        # Collect any text parts from this turn
+        text_parts = [
+            part.text
+            for part in candidate.content.parts
+            if part.text is not None
+        ]
+        if text_parts:
+            logs.append(" ".join(text_parts))
 
-        if message.content:
-            logs.append(message.content)
-
-        if not message.tool_calls:
-            logs.append("✅ LLM finished done reasoning.")
+        # Check for function calls — response.function_calls is a convenience list
+        function_calls = response.function_calls  # List[types.FunctionCall] | None
+        
+        if not function_calls:
+            logs.append("✅ LLM finished reasoning.")
             break
 
-        messages.append(message)
+        # Append the model's turn to contents before adding tool results
+        contents.append(candidate.content)
 
-        for tool_call in message.tool_calls:
-            tool_name = tool_call.function.name
+        # Collect all tool results for this turn into one Content block
+        function_response_parts = []
+
+        for fn_call in function_calls:
+            tool_name = fn_call.name
             logs.append(f"▶ AI chose action: {tool_name}")
 
             if tool_name == "update_requirements":
@@ -159,11 +277,21 @@ def decide_next_step(vulnerable: list, project_path: str) -> list[str]:
                 result = f"Unknown tool: {tool_name}"
 
             logs.append(f"↩ Result: {result}")
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "content": result,
-            })
+
+            # Build a FunctionResponse Part for each call
+            function_response_parts.append(
+                types.Part(
+                    function_response=types.FunctionResponse(
+                        name=tool_name,
+                        response={"result": result},  # must be a dict
+                    )
+                )
+            )
+
+        # All function responses go into a single "tool" Content turn
+        contents.append(
+            types.Content(role="tool", parts=function_response_parts)
+        )
 
     return logs
 
