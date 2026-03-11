@@ -13,11 +13,11 @@ HEALTH_URL = "https://depguard.onrender.com/health"
 def wake_server():
     """Ping the server to wake it up if it's sleeping."""
     try:
-        typer.echo("⏳ Connecting to DepGuard server...")
+        typer.echo("Connecting to DepGuard server...")
         httpx.get(HEALTH_URL, timeout=60.0)
-        typer.echo("✅ Server is awake!\n")
+        typer.echo("Server connection is active!\n")
     except httpx.TimeoutException:
-        typer.echo("⚠️  Server is slow to wake — retrying scan anyway...\n")
+        typer.echo("⚠️ Server is slow to wake — retrying scan anyway...\n")
     except Exception:
         pass  # Best effort
 
@@ -34,7 +34,7 @@ def auto_fix(req_path: str):
     if result.returncode == 0:
         typer.echo("✅ Fixed packages installed successfully!")
     else:
-        typer.echo(f"⚠️  Some packages failed to install:\n{result.stderr}")
+        typer.echo(f"⚠️ Some packages failed to install:\n{result.stderr}")
 
 
 @app.command()
@@ -49,7 +49,7 @@ def scan():
 
     wake_server()
 
-    typer.echo("📦 requirements.txt Found — Processing for vulnerabilities...\n")
+    typer.echo("requirements.txt Found — Processing for vulnerabilities...\n")
 
     try:
         with open(req_path, "rb") as f:
